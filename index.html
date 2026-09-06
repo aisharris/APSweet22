@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday!</title>
+    <style>
+        /* Basic Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fce4ec;
+            color: #333;
+            text-align: center;
+        }
+
+        /* Landing Screen (To bypass autoplay rules) */
+        #welcome-screen {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8bbd0;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background-color: #e91e63;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #c2185b;
+        }
+
+        /* Main Website Content (Hidden initially) */
+        #main-content {
+            display: none;
+            padding: 50px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #e91e63;
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        /* Form Styling */
+        form {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        input, textarea {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen">
+        <h2>You're Invited!</h2>
+        <p>Turn your volume up 🔊</p>
+        <button id="enter-btn">Open Invitation</button>
+    </div>
+
+    <div id="main-content">
+        <h1>Happy Birthday!</h1>
+        <p>Leave a birthday wish below and it will be sent directly to me.</p>
+
+        <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+            <input type="text" name="name" placeholder="Your Name" required>
+            <textarea name="message" rows="5" placeholder="Write your birthday wish here..." required></textarea>
+            <button type="submit">Send Wish</button>
+        </form>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="your-song-file.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        document.getElementById('enter-btn').addEventListener('click', function() {
+            // Hide the welcome screen
+            document.getElementById('welcome-screen').style.display = 'none';
+            // Show the main content
+            document.getElementById('main-content').style.display = 'block';
+            // Play the music
+            document.getElementById('bg-music').play();
+        });
+    </script>
+</body>
+</html>
