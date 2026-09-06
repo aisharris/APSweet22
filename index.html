@@ -68,97 +68,192 @@
             cursor: pointer;
             transition: transform 0.2s, background 0.2s;
             box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            margin: 5px;
         }
 
         button:hover {
             transform: translateY(-2px);
             background: #ff5252;
         }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
 
-        form {
+        /* Slideshow Specific Styling */
+        .photo-container {
+            width: 100%;
+            height: 250px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.1);
+        }
+
+        #wish-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .wish-text-container {
+            background: rgba(255,255,255,0.6);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            min-height: 100px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            justify-content: center;
         }
 
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.5);
-            background: rgba(255,255,255,0.8);
-            box-sizing: border-box;
-            font-family: inherit;
+        #wish-message {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            color: #333;
+            margin: 0 0 10px 0;
+            font-style: italic;
         }
 
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: white;
+        #wish-author {
+            margin: 0;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #slide-counter {
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
 
-    <!-- Hidden container for the YouTube API to avoid layout shifts -->
+    <!-- Hidden YouTube API container -->
     <div id="youtube-player" style="position: absolute; width: 0; height: 0; overflow: hidden;"></div>
 
     <div class="card">
         <div id="welcome-screen">
-            <h1>You're Invited!</h1>
+            <h1>Birthday Memories</h1>
             <p>Turn on your sound 🎵</p>
-            <button id="enter-btn">Open Invitation</button>
+            <button id="enter-btn">Open Collection</button>
         </div>
 
         <div id="main-content">
-            <h1>Happy Birthday!</h1>
-            <p>Leave a wish below to add to the digital capsule.</p>
+            <div class="photo-container">
+                <img id="wish-photo" src="" alt="Birthday Memory">
+            </div>
+            
+            <div class="wish-text-container">
+                <p id="wish-message"></p>
+                <p id="wish-author"></p>
+            </div>
 
-            <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-                <input type="text" name="name" placeholder="Your Name" required>
-                <textarea name="message" rows="4" placeholder="Write your birthday wish here..." required></textarea>
-                <button type="submit">Send Wish</button>
-            </form>
+            <div class="controls">
+                <button id="prev-btn">◀ Prev</button>
+                <span id="slide-counter">1 / 3</span>
+                <button id="next-btn">Next ▶</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // 1. Load the YouTube IFrame Player API asynchronously
+        // --- 1. HARDCODED TEXT DATA (Your Database) ---
+        // Add as many wishes as you want here. 
+        // YouTube ID is the 11-character code in a YouTube URL (e.g., v=dQw4w9WgXcQ)
+        const wishesData = [
+            {
+                author: "- Sarah",
+                message: "Happy Birthday! So glad we got to go to the beach this year. Here is that song we couldn't stop listening to!",
+                photo: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=500&q=80", 
+                youtubeId: "dQw4w9WgXcQ"
+            },
+            {
+                author: "- Mark & Dave",
+                message: "Hope you have an amazing day man. Throwback to our hiking trip last summer!",
+                photo: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=500&q=80",
+                youtubeId: "L_jWHffIx5E" // Smash Mouth - All Star
+            },
+            {
+                author: "- Mom",
+                message: "Happy birthday sweetheart! I love you so much. Playing your favorite classical piece.",
+                photo: "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=500&q=80",
+                youtubeId: "cjVQ36NhbMk" // Chopin 
+            }
+        ];
+
+        let currentIndex = 0;
+
+        // --- 2. YOUTUBE API SETUP ---
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-        // 2. Initialize the player when the API is ready
         var player;
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('youtube-player', {
                 height: '0',
                 width: '0',
-                videoId: 'dQw4w9WgXcQ', // REPLACE: The 11-character YT ID
-                playerVars: {
-                    'autoplay': 0,
-                    'controls': 0,
-                    'disablekb': 1,
-                    'loop': 1,
-                    'playlist': 'dQw4w9WgXcQ' // REPLACE: Must match videoId to loop properly
-                },
-                events: {
-                    'onReady': onPlayerReady
-                }
+                playerVars: { 'autoplay': 0, 'controls': 0, 'disablekb': 1 },
+                events: { 'onReady': onPlayerReady }
             });
         }
 
-        // 3. Bind playback to the entry button to bypass browser autoplay blocks
+        // --- 3. SLIDESHOW LOGIC ---
         function onPlayerReady(event) {
+            // Unlock audio and start the show on click
             document.getElementById('enter-btn').addEventListener('click', function() {
                 document.getElementById('welcome-screen').style.display = 'none';
                 document.getElementById('main-content').style.display = 'block';
-                
-                player.setVolume(50); // Set volume (0-100)
-                player.playVideo();
+                player.setVolume(50);
+                loadSlide(currentIndex);
             });
         }
+
+        function loadSlide(index) {
+            const currentWish = wishesData[index];
+            
+            // Update Text & Photo
+            document.getElementById('wish-message').innerText = '"' + currentWish.message + '"';
+            document.getElementById('wish-author').innerText = currentWish.author;
+            document.getElementById('wish-photo').src = currentWish.photo;
+            
+            // Update Counter
+            document.getElementById('slide-counter').innerText = (index + 1) + " / " + wishesData.length;
+            
+            // Update Music (loads and auto-plays the new song)
+            player.loadVideoById(currentWish.youtubeId);
+
+            // Handle button disabled states
+            document.getElementById('prev-btn').disabled = (index === 0);
+            document.getElementById('next-btn').disabled = (index === wishesData.length - 1);
+        }
+
+        // --- 4. BUTTON LISTENERS ---
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentIndex < wishesData.length - 1) {
+                currentIndex++;
+                loadSlide(currentIndex);
+            }
+        });
+
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadSlide(currentIndex);
+            }
+        });
     </script>
 </body>
 </html>
