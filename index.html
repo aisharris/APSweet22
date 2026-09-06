@@ -5,110 +5,160 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Happy Birthday!</title>
     <style>
-        /* Basic Reset */
+        :root {
+            --primary: #ff6b6b;
+            --bg-gradient: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+        }
+        
         body, html {
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #fce4ec;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
             color: #333;
-            text-align: center;
-        }
-
-        /* Landing Screen (To bypass autoplay rules) */
-        #welcome-screen {
-            height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #f8bbd0;
         }
 
-        button {
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            background-color: #e91e63;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: background-color 0.3s;
+        .card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
         }
 
-        button:hover {
-            background-color: #c2185b;
+        #welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        /* Main Website Content (Hidden initially) */
         #main-content {
             display: none;
-            padding: 50px 20px;
-            max-width: 600px;
-            margin: 0 auto;
         }
 
         h1 {
-            color: #e91e63;
-            font-size: 3rem;
-            margin-bottom: 10px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 5px;
         }
 
-        /* Form Styling */
+        p {
+            color: #fff;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            background: #ff5252;
+        }
+
         form {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
             gap: 15px;
-            margin-top: 30px;
         }
 
         input, textarea {
-            padding: 10px;
-            font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
             width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.8);
             box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
         }
     </style>
 </head>
 <body>
 
-    <div id="welcome-screen">
-        <h2>You're Invited!</h2>
-        <p>Turn your volume up 🔊</p>
-        <button id="enter-btn">Open Invitation</button>
+    <!-- Hidden container for the YouTube API to avoid layout shifts -->
+    <div id="youtube-player" style="position: absolute; width: 0; height: 0; overflow: hidden;"></div>
+
+    <div class="card">
+        <div id="welcome-screen">
+            <h1>You're Invited!</h1>
+            <p>Turn on your sound 🎵</p>
+            <button id="enter-btn">Open Invitation</button>
+        </div>
+
+        <div id="main-content">
+            <h1>Happy Birthday!</h1>
+            <p>Leave a wish below to add to the digital capsule.</p>
+
+            <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+                <input type="text" name="name" placeholder="Your Name" required>
+                <textarea name="message" rows="4" placeholder="Write your birthday wish here..." required></textarea>
+                <button type="submit">Send Wish</button>
+            </form>
+        </div>
     </div>
-
-    <div id="main-content">
-        <h1>Happy Birthday!</h1>
-        <p>Leave a birthday wish below and it will be sent directly to me.</p>
-
-        <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-            <input type="text" name="name" placeholder="Your Name" required>
-            <textarea name="message" rows="5" placeholder="Write your birthday wish here..." required></textarea>
-            <button type="submit">Send Wish</button>
-        </form>
-    </div>
-
-    <audio id="bg-music" loop>
-        <source src="your-song-file.mp3" type="audio/mpeg">
-    </audio>
 
     <script>
-        document.getElementById('enter-btn').addEventListener('click', function() {
-            // Hide the welcome screen
-            document.getElementById('welcome-screen').style.display = 'none';
-            // Show the main content
-            document.getElementById('main-content').style.display = 'block';
-            // Play the music
-            document.getElementById('bg-music').play();
-        });
+        // 1. Load the YouTube IFrame Player API asynchronously
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // 2. Initialize the player when the API is ready
+        var player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('youtube-player', {
+                height: '0',
+                width: '0',
+                videoId: 'dQw4w9WgXcQ', // REPLACE: The 11-character YT ID
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 0,
+                    'disablekb': 1,
+                    'loop': 1,
+                    'playlist': 'dQw4w9WgXcQ' // REPLACE: Must match videoId to loop properly
+                },
+                events: {
+                    'onReady': onPlayerReady
+                }
+            });
+        }
+
+        // 3. Bind playback to the entry button to bypass browser autoplay blocks
+        function onPlayerReady(event) {
+            document.getElementById('enter-btn').addEventListener('click', function() {
+                document.getElementById('welcome-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                
+                player.setVolume(50); // Set volume (0-100)
+                player.playVideo();
+            });
+        }
     </script>
 </body>
 </html>
